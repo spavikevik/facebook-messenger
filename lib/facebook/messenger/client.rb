@@ -1,6 +1,7 @@
 require 'rack'
 require 'json'
 require 'openssl'
+require 'httparty'
 
 module Facebook
   module Messenger
@@ -12,37 +13,39 @@ module Facebook
       some time, check your app's secret token.
     HEREDOC
 
-    # This module holds the server that processes incoming messages from the
-    # Facebook Messenger Platform.
-    class Server
-      def self.call(env)
-        new.call(env)
+    # Webhook events processing
+
+    class Client
+      
+      attr_writer :request
+
+      def initialize
       end
-
-      def call(env)
-        @request = Rack::Request.new(env)
-        @response = Rack::Response.new
-
-        if @request.get?
-          verify
-        elsif @request.post?
-          receive
-        else
-          @response.status = 405
-        end
-
-        @response.finish
-      end
-
-      private
 
       def verify
         if valid_verify_token?(@request.params['hub.verify_token'])
-          @response.write @request.params['hub.challenge']
+          return @request.params['hub.challenge']
         else
-          @response.write 'Error; wrong verify token'
+          return 'Error; wrong verify token'
         end
       end
+
+      def validate_signature(request) 
+        self.request = request
+        begin
+          self.check_integrity
+          return true
+        rescue
+          return false
+        end
+      end
+
+      def get_profile(user_id)
+        access_token = Facebook::Messenger.config.provider.access_token_for
+        return HTTParty.get("#{GRAPH_API}#{user_id}?fields=first_name,last_name,profile_pic&access_token=#{access_token}")
+      end
+
+      private
 
       def receive
         check_integrity
@@ -135,12 +138,6 @@ module Facebook
             Facebook::Messenger::Bot.receive(messaging)
           end
         end
-      end
-
-      def respond_with_error(error)
-        @response.status = 400
-        @response.write(error.message)
-        @response.headers['Content-Type'.freeze] = 'text/plain'.freeze
       end
     end
   end

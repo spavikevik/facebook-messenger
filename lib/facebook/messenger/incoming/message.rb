@@ -47,6 +47,14 @@ module Facebook
           attachments.first['type']
         end
 
+        def type
+          if text
+            return 'text'
+          else
+            return attachment_type
+          end
+        end
+
         def attachment_url
           return if attachments.nil?
           return unless %w[image audio video file].include? attachment_type
