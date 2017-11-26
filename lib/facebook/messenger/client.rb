@@ -120,25 +120,25 @@ module Facebook
 
       # Returns a Hash describing the parsed request body.
       def parsed_body
-        @parsed_body ||= JSON.parse(body)
+        @parsed_body ||= JSON.parse(body)['entry'.freeze]
       rescue JSON::ParserError
         raise BadRequestError, 'Error parsing request body format'
       end
 
-      def trigger(events)
-        # Facebook may batch several items in the 'entry' array during
-        # periods of high load.
-        events['entry'.freeze].each do |entry|
-          # If the application has subscribed to webhooks other than Messenger,
-          # 'messaging' won't be available and it is not relevant to us.
-          next unless entry['messaging'.freeze]
-          # Facebook may batch several items in the 'messaging' array during
-          # periods of high load.
-          entry['messaging'.freeze].each do |messaging|
-            Facebook::Messenger::Bot.receive(messaging)
-          end
-        end
-      end
+      # def trigger(events)
+      #   # Facebook may batch several items in the 'entry' array during
+      #   # periods of high load.
+      #   events['entry'.freeze].each do |entry|
+      #     # If the application has subscribed to webhooks other than Messenger,
+      #     # 'messaging' won't be available and it is not relevant to us.
+      #     next unless entry['messaging'.freeze]
+      #     # Facebook may batch several items in the 'messaging' array during
+      #     # periods of high load.
+      #     entry['messaging'.freeze].each do |messaging|
+      #       Facebook::Messenger::Bot.receive(messaging)
+      #     end
+      #   end
+      # end
     end
   end
 end

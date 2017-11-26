@@ -3,7 +3,7 @@ require 'facebook/messenger/error'
 require 'facebook/messenger/subscriptions'
 require 'facebook/messenger/profile'
 require 'facebook/messenger/bot'
-require 'facebook/messenger/server'
+require 'facebook/messenger/client'
 require 'facebook/messenger/configuration'
 require 'facebook/messenger/incoming'
 
